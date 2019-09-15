@@ -106,3 +106,59 @@ export const IssueList = styled.ul`
     }
   }
 `;
+
+export const Filter = styled.div`
+  display: flex;
+
+  border: 1px solid #7159c1;
+  border-radius: 4px;
+  margin: 16px;
+`;
+
+export const Button = styled.button.attrs({
+  type: 'button',
+})`
+  flex: 1;
+
+  background: ${props => (props.active ? '#7159c1' : '#fff')};
+  border: none;
+  color: ${props => (props.active ? '#fff' : '#7159c1')};
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px;
+  text-transform: uppercase;
+`;
+
+export const Pagination = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  border: 1px solid #7159c1;
+  border-radius: 4px;
+  margin: 16px;
+
+  p {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+  }
+`;
+
+export const PageButton = styled.button.attrs({
+  type: 'button',
+})`
+  flex: 1;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: baseline;
+
+  background: ${props => (props.active ? '#7159c1' : '#fff')};
+  border: none;
+  color: ${props => (props.active ? '#fff' : '#7159c1')};
+  font-size: 12px;
+  font-weight: bold;
+  padding: 8px;
+  text-transform: uppercase;
+`;

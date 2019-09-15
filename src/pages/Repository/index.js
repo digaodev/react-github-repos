@@ -1,16 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { FaArrowRight, FaArrowLeft } from 'react-icons/fa';
 
 import api from '../../services/api';
 import Container from '../../components/Container';
 
-import { Loading, Owner, IssueList } from './styles';
+import {
+  Loading,
+  Owner,
+  IssueList,
+  Filter,
+  Button,
+  Pagination,
+  PageButton,
+} from './styles';
 
 const Repository = ({ match }) => {
   const [repo, setRepo] = useState({});
   const [issues, setIssues] = useState([]);
   const [errors, setErrors] = useState(null);
+  const [filter, setFilter] = useState('open');
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,8 +33,8 @@ const Repository = ({ match }) => {
           api.get(`/repos/${repoName}`),
           api.get(`/repos/${repoName}/issues`, {
             params: {
-              state: 'open',
-              per_page: 5,
+              state: filter,
+              page,
             },
           }),
         ]);
@@ -38,7 +49,7 @@ const Repository = ({ match }) => {
     }
 
     fetchRepo();
-  }, [match.params.repo]);
+  }, [match.params.repo, filter, page]);
 
   if (isLoading) return <Loading>Carregando...</Loading>;
 
@@ -53,6 +64,21 @@ const Repository = ({ match }) => {
         <h1>{repo.name}</h1>
         <p>{repo.description}</p>
       </Owner>
+
+      <Filter>
+        <Button active={filter === 'all'} onClick={() => setFilter('all')}>
+          Todas as Issues
+        </Button>
+        <Button active={filter === 'open'} onClick={() => setFilter('open')}>
+          Issues Abertas
+        </Button>
+        <Button
+          active={filter === 'closed'}
+          onClick={() => setFilter('closed')}
+        >
+          Issues Fechadas
+        </Button>
+      </Filter>
 
       <IssueList>
         {issues.map(issue => (
@@ -79,6 +105,22 @@ const Repository = ({ match }) => {
           </li>
         ))}
       </IssueList>
+
+      <Pagination>
+        {page > 1 ? (
+          <PageButton onClick={() => setPage(currentPage => currentPage - 1)}>
+            <FaArrowLeft size={12} />
+            Anterior
+          </PageButton>
+        ) : (
+          <PageButton />
+        )}
+        <p>{page}</p>
+        <PageButton onClick={() => setPage(currentPage => currentPage + 1)}>
+          Próxima
+          <FaArrowRight size={12} />
+        </PageButton>
+      </Pagination>
     </Container>
   );
 };

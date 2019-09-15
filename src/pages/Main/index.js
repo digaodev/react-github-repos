@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaGithubAlt, FaPlus, FaSpinner } from 'react-icons/fa';
 
 import Container from '../../components/Container';
 import api from '../../services/api';
 
-import { Form, SubmitButton, List, ErrorMessage } from './styles';
+import { Form, SubmitButton, List, Input, ErrorMessage } from './styles';
 
 const Main = () => {
   const [repos, setRepos] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [errors, setErrors] = useState(null);
+  const [hasInputError, setHasInputError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const inputRef = useRef();
 
   useEffect(() => {
     const savedRepos = localStorage.getItem('repos');
@@ -33,23 +35,37 @@ const Main = () => {
     e.preventDefault();
 
     setIsSubmitting(true);
+    setHasInputError(false);
     setErrors(null);
+
+    if (inputValue === '') {
+      setIsSubmitting(false);
+      setHasInputError(true);
+      inputRef.current.focus();
+      return;
+    }
 
     try {
       const repoExists = repos.find(repo => repo.name === inputValue);
 
-      if (!repoExists && inputValue !== '') {
-        const res = await api.get(`/repos/${inputValue}`);
-
-        const newRepo = {
-          id: res.data.id,
-          name: res.data.full_name,
-        };
-
-        setRepos(currentRepos => [newRepo, ...currentRepos]);
+      if (repoExists) {
+        throw new Error('Repo já existe na lista');
       }
+
+      const res = await api.get(`/repos/${inputValue}`);
+
+      const newRepo = {
+        id: res.data.id,
+        name: res.data.full_name,
+      };
+
+      setRepos(currentRepos => [newRepo, ...currentRepos]);
     } catch (error) {
-      setErrors(error.message);
+      if (error.response && error.response.status === 404) {
+        setErrors('Repo não encontrado');
+      } else {
+        setErrors(error.message);
+      }
     }
 
     setIsSubmitting(false);
@@ -63,11 +79,13 @@ const Main = () => {
         Repositórios
       </h1>
       <Form onSubmit={handleSubmit}>
-        <input
+        <Input
           type="text"
           placeholder="Adicionar repositório"
           value={inputValue}
           onChange={handleInputChange}
+          hasError={hasInputError}
+          ref={inputRef}
         />
 
         <SubmitButton disabled={isSubmitting}>
@@ -83,7 +101,6 @@ const Main = () => {
           <p>{errors}</p>
         </ErrorMessage>
       )}
-
       <List>
         {repos.map(repo => (
           <li key={repo.id}>
